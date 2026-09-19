@@ -1,0 +1,16 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependencies and Build Outputs
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Editor and OS
+.DS_Store
+*.swp
+.vscode/
+.env

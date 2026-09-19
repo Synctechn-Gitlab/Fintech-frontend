@@ -1,6 +1,7 @@
 {
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/api/v1/(.*)", "destination": "https://fintech-backend-s12u.onrender.com/api/v1/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

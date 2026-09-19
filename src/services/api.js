@@ -2,6 +2,11 @@ import { Platform } from 'react-native';
 
 // ─── Base URL ────────────────────────────────────────────────────────────────
 const getBaseUrl = () => {
+  // If running on Web in production (Vercel), use relative path to utilize the vercel.json proxy rewrite
+  if (Platform.OS === 'web' && process.env.NODE_ENV === 'production') {
+    return '/api/v1';
+  }
+
   let baseUrl = process.env.EXPO_PUBLIC_API_URL || 'https://fintech-backend-s12u.onrender.com';
   
   if (baseUrl.endsWith('/api/v1')) return baseUrl;

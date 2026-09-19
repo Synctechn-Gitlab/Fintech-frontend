@@ -8,7 +8,7 @@ AsyncStorage.getItem('nova_loan').then((json) => {
     state = JSON.parse(json);
     notify();
   }
-});
+}).catch(console.error);
 
 const notify = () => {
   listeners.forEach((listener) => listener(state));

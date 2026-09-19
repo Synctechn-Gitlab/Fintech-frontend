@@ -104,12 +104,20 @@ const LoansPage = () => {
     }
   }, [loan?.id, loan?.nextDueDate]);
 
-  const baseEmi = overdueData ? overdueData.totalOverdueAmount : (loan ? loan.nextDueAmount : 0);
+  const parseSafeNumber = (val) => {
+    if (val == null || val === '') return 0;
+    if (typeof val === 'number') return val;
+    const cleaned = String(val).replace(/[^0-9.-]+/g, '');
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const baseEmi = overdueData ? parseSafeNumber(overdueData.totalOverdueAmount) : (loan ? parseSafeNumber(loan.nextDueAmount) : 0);
 
   const payAmount = loan ? (
     payType === 'emi' ? baseEmi
-      : payType === 'full' ? loan.outstanding
-        : parseFloat(customAmount) || 0
+      : payType === 'full' ? parseSafeNumber(loan.outstanding)
+        : parseSafeNumber(customAmount)
   ) : 0;
 
   const methodLabel = PAYMENT_METHODS.find((m) => m.id === selectedMethod)?.label || '';

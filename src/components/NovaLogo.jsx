@@ -7,7 +7,7 @@ export const NovaLogoIcon = ({ size = 64 }) => {
   return (
     <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
       <Image 
-        source={{ uri: 'https://res.cloudinary.com/wowukaao/image/upload/v1785171832/Screenshot_2026-07-27_223203-removebg-preview_kikjdd.png' }}
+        source={require('../../logo/WhatsApp Image 2026-07-21 at 1.47.38 PM.jpeg')}
         style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
       />
     </View>

@@ -1,27 +1,36 @@
 {
   "expo": {
-    "name": "Nova Finance",
+    "name": "Hidel Finance",
     "slug": "nova-finance",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "backgroundColor": "#0d0f14"
-    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hidelfinance.novafinance",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0d0f14"
-      }
+      },
+      "package": "com.hidelfinance.novafinance"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-video"
-    ]
+      "expo-video",
+      "expo-font",
+      "expo-status-bar"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7e6913d5-68c7-4de3-9cf1-7be48673f3dd"
+      }
+    }
   }
 }

@@ -78,7 +78,7 @@ const PaymentsPage = () => {
             </Text>
             <TouchableOpacity
               style={{ backgroundColor: '#36e436ff', borderRadius: 16, paddingHorizontal: 24, paddingVertical: 14, alignItems: 'center' }}
-              onPress={() => navigation.navigate('Home')}
+              onPress={() => navigation.navigate('Loans')}
             >
               <Text style={{ fontSize: 15, fontWeight: '600', color: '#000000' }}>Explore Loans</Text>
             </TouchableOpacity>

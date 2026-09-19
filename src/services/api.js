@@ -1,13 +1,13 @@
 import { Platform } from 'react-native';
 
 // ─── Base URL ────────────────────────────────────────────────────────────────
-// Android emulator: 10.0.2.2 maps to host machine's localhost
-// iOS simulator / web: localhost works directly
 const getBaseUrl = () => {
-  if (Platform.OS === 'android') {
-    return process.env.EXPO_PUBLIC_ANDROID_API_URL || 'http://10.0.2.2:5000/api/v1';
-  }
-  return process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+  let baseUrl = process.env.EXPO_PUBLIC_API_URL || 'https://fintech-backend-s12u.onrender.com';
+  
+  if (baseUrl.endsWith('/api/v1')) return baseUrl;
+  
+  baseUrl = baseUrl.replace(/\/$/, '');
+  return `${baseUrl}/api/v1`;
 };
 
 export const BASE_URL = getBaseUrl();

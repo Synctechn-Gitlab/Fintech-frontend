@@ -43,6 +43,10 @@ Promise.all([
     state = { ...state, isHydrated: true };
     notify();
   }
+}).catch((error) => {
+  console.error("AsyncStorage error in authStore:", error);
+  state = { ...state, isHydrated: true };
+  notify();
 });
 
 const notify = () => {
@@ -76,7 +80,7 @@ export const authStore = {
     notify();
   },
   logout() {
-    state = { user: null, isAuthenticated: false };
+    state = { user: null, isAuthenticated: false, isHydrated: true };
     AsyncStorage.removeItem('nova_user');
     notify();
   },
@@ -84,7 +88,7 @@ export const authStore = {
     if (userData) {
       this.setUser(userData);
     } else {
-      state = { user: DEFAULT_USER, isAuthenticated: true };
+      state = { user: DEFAULT_USER, isAuthenticated: true, isHydrated: true };
       AsyncStorage.setItem('nova_user', JSON.stringify(DEFAULT_USER));
       notify();
     }
@@ -99,7 +103,7 @@ export const authStore = {
       ...userData,
       role: normalizedRole,
     };
-    state = { user: finalUser, isAuthenticated: true };
+    state = { user: finalUser, isAuthenticated: true, isHydrated: true };
     AsyncStorage.setItem('nova_user', JSON.stringify(finalUser));
     notify();
   },

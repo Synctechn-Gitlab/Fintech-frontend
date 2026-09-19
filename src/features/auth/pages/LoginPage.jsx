@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   ScrollView,
   Alert,
   useWindowDimensions,
+  SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -44,7 +45,7 @@ const SECURITY_ITEMS = [
 
 const LoginPage = () => {
   const { colors } = useTheme();
-  const styles = getStyles(colors);
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
   const navigation = useNavigation();
@@ -65,8 +66,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [pwFocused, setPwFocused] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
   // Forgot password & Signup flow states
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'forgot' | 'reset'
@@ -76,8 +76,35 @@ const LoginPage = () => {
   // Signup specific states
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [nameFocused, setNameFocused] = useState(false);
-  const [phoneFocused, setPhoneFocused] = useState(false);
+
+  const loginEmailRef = useRef(null);
+  const loginPasswordRef = useRef(null);
+  const signupNameRef = useRef(null);
+  const signupEmailRef = useRef(null);
+  const signupPhoneRef = useRef(null);
+  const signupPasswordRef = useRef(null);
+  const forgotEmailRef = useRef(null);
+  const resetOtpRef = useRef(null);
+  const resetPasswordRef = useRef(null);
+
+  const logNativeFocus = (context) => {
+    console.log(`[NATIVE FOCUS STATE] (${context})`, {
+      login_email: loginEmailRef.current?.isFocused?.() || false,
+      login_password: loginPasswordRef.current?.isFocused?.() || false,
+      signup_name: signupNameRef.current?.isFocused?.() || false,
+      signup_email: signupEmailRef.current?.isFocused?.() || false,
+      signup_phone: signupPhoneRef.current?.isFocused?.() || false,
+      signup_password: signupPasswordRef.current?.isFocused?.() || false,
+      forgot_email: forgotEmailRef.current?.isFocused?.() || false,
+      reset_otp: resetOtpRef.current?.isFocused?.() || false,
+      reset_password: resetPasswordRef.current?.isFocused?.() || false,
+    });
+  };
+
+  useEffect(() => {
+    console.log(`[MOUNT] LoginPage (mode: ${mode})`);
+    return () => console.log(`[UNMOUNT] LoginPage (mode: ${mode})`);
+  }, [mode]);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -117,11 +144,16 @@ const LoginPage = () => {
     }
     setLoading(true);
     try {
-      const res = await authService.signup(name, email, phone, password);
-      // Don't show success alert immediately, navigate to verification screen
-      navigation.navigate('VerifyEmail', { email: email.trim().toLowerCase() });
-      setMode('login');
-      setPassword('');
+      const response = await authService.signup(name, email, phone, password);
+      // Validate that it actually succeeded according to our expected schema if any
+      if (response && response.success === false) {
+        throw new Error(response.message || 'Registration failed');
+      }
+      
+      // Navigate to verification screen. Do NOT switch mode yet, 
+      // otherwise it unmounts the current screen context instantly on Android.
+      // Use replace so they don't accidentally go back to the signup form in a bad state.
+      navigation.replace('VerifyEmail', { email: email.trim().toLowerCase() });
     } catch (error) {
       Alert.alert('Signup Failed', error.message || 'An error occurred during registration.');
     } finally {
@@ -172,7 +204,7 @@ const LoginPage = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <TopRightToast 
         visible={toastVisible} 
         message={toastMessage} 
@@ -180,7 +212,7 @@ const LoginPage = () => {
       />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboard}
       >
         <ScrollView
@@ -212,20 +244,33 @@ const LoginPage = () => {
                 <>
                   <View style={styles.fieldGroup}>
                     <Text style={styles.label}>Email Address or Customer ID</Text>
-                    <View style={[styles.inputWrapper, emailFocused && styles.inputWrapperFocused]}>
-                      <Ionicons name="mail-outline" size={16} color={emailFocused ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
+                    <View style={[styles.inputWrapper, focusedField === 'login_email' && styles.inputWrapperFocused]}>
+                      <Ionicons name="mail-outline" size={16} color={focusedField === 'login_email' ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={loginEmailRef}
+                        key="login-email-input"
                         style={styles.input}
                         value={email}
-                        onChangeText={setEmail}
+                        onChangeText={(text) => {
+                          console.log('[CHANGE] LOGIN_EMAIL', text);
+                          setEmail(text);
+                        }}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoComplete="off"
+                        importantForAutofill="no"
                         autoCorrect={false}
-                        textContentType="none"
                         placeholderTextColor={colors.mutedForeground}
-                        onFocus={() => setEmailFocused(true)}
-                        onBlur={() => setEmailFocused(false)}
+                        onFocus={() => {
+                          console.log('[FOCUS] LOGIN_EMAIL');
+                          setFocusedField('login_email');
+                          setTimeout(() => logNativeFocus('onFocus login_email'), 0);
+                        }}
+                        onBlur={() => {
+                          console.log('[BLUR] LOGIN_EMAIL');
+                          if (focusedField === 'login_email') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur login_email'), 0);
+                        }}
                       />
                     </View>
                   </View>
@@ -237,19 +282,32 @@ const LoginPage = () => {
                         <Text style={styles.forgotText}>Forgot?</Text>
                       </TouchableOpacity>
                     </View>
-                    <View style={[styles.inputWrapper, pwFocused && styles.inputWrapperFocused]}>
-                      <Ionicons name="lock-closed-outline" size={16} color={pwFocused ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
+                    <View style={[styles.inputWrapper, focusedField === 'login_password' && styles.inputWrapperFocused]}>
+                      <Ionicons name="lock-closed-outline" size={16} color={focusedField === 'login_password' ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={loginPasswordRef}
+                        key="login-password-input"
                         style={styles.input}
                         value={password}
-                        onChangeText={setPassword}
+                        onChangeText={(text) => {
+                          console.log('[CHANGE] LOGIN_PASSWORD', text);
+                          setPassword(text);
+                        }}
                         secureTextEntry={!showPw}
                         autoComplete="off"
+                        importantForAutofill="no"
                         autoCorrect={false}
-                        textContentType="none"
                         placeholderTextColor={colors.mutedForeground}
-                        onFocus={() => setPwFocused(true)}
-                        onBlur={() => setPwFocused(false)}
+                        onFocus={() => {
+                          console.log('[FOCUS] LOGIN_PASSWORD');
+                          setFocusedField('login_password');
+                          setTimeout(() => logNativeFocus('onFocus login_password'), 0);
+                        }}
+                        onBlur={() => {
+                          console.log('[BLUR] LOGIN_PASSWORD');
+                          if (focusedField === 'login_password') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur login_password'), 0);
+                        }}
                       />
                       <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowPw((s) => !s)}>
                         <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={17} color={colors.mutedForeground} />
@@ -258,7 +316,7 @@ const LoginPage = () => {
                   </View>
 
                   <TouchableOpacity style={styles.signInBtn} onPress={handleLogin} disabled={loading} activeOpacity={0.85}>
-                    {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.signInText}>Sign In Securely</Text>}
+                    {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.signInText}>Secure Sign In</Text>}
                   </TouchableOpacity>
 
                   <View style={styles.switchModeContainer}>
@@ -275,64 +333,124 @@ const LoginPage = () => {
                 <>
                   <View style={styles.fieldGroup}>
                     <Text style={styles.label}>Full Name</Text>
-                    <View style={[styles.inputWrapper, nameFocused && styles.inputWrapperFocused]}>
-                      <Ionicons name="person-outline" size={16} color={nameFocused ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
+                    <View style={[styles.inputWrapper, focusedField === 'signup_name' && styles.inputWrapperFocused]}>
+                      <Ionicons name="person-outline" size={16} color={focusedField === 'signup_name' ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={signupNameRef}
+                        key="signup-name-input"
                         style={styles.input}
                         value={name}
-                        onChangeText={setName}
+                        onChangeText={(text) => {
+                          console.log('[CHANGE] NAME', text);
+                          setName(text);
+                        }}
+                        autoComplete="off"
+                        importantForAutofill="no"
                         placeholderTextColor={colors.mutedForeground}
-                        onFocus={() => setNameFocused(true)}
-                        onBlur={() => setNameFocused(false)}
+                        onFocus={() => {
+                          console.log('[FOCUS] NAME');
+                          setFocusedField('signup_name');
+                          setTimeout(() => logNativeFocus('onFocus signup_name'), 0);
+                        }}
+                        onBlur={() => {
+                          console.log('[BLUR] NAME');
+                          if (focusedField === 'signup_name') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur signup_name'), 0);
+                        }}
                       />
                     </View>
                   </View>
 
                   <View style={styles.fieldGroup}>
                     <Text style={styles.label}>Email Address</Text>
-                    <View style={[styles.inputWrapper, emailFocused && styles.inputWrapperFocused]}>
-                      <Ionicons name="mail-outline" size={16} color={emailFocused ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
+                    <View style={[styles.inputWrapper, focusedField === 'signup_email' && styles.inputWrapperFocused]}>
+                      <Ionicons name="mail-outline" size={16} color={focusedField === 'signup_email' ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={signupEmailRef}
+                        key="signup-email-input"
                         style={styles.input}
                         value={email}
-                        onChangeText={setEmail}
+                        onChangeText={(text) => {
+                          console.log('[CHANGE] EMAIL', text);
+                          setEmail(text);
+                        }}
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        autoComplete="off"
+                        importantForAutofill="no"
                         placeholderTextColor={colors.mutedForeground}
-                        onFocus={() => setEmailFocused(true)}
-                        onBlur={() => setEmailFocused(false)}
+                        onFocus={() => {
+                          console.log('[FOCUS] EMAIL');
+                          setFocusedField('signup_email');
+                          setTimeout(() => logNativeFocus('onFocus signup_email'), 0);
+                        }}
+                        onBlur={() => {
+                          console.log('[BLUR] EMAIL');
+                          if (focusedField === 'signup_email') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur signup_email'), 0);
+                        }}
                       />
                     </View>
                   </View>
 
                   <View style={styles.fieldGroup}>
                     <Text style={styles.label}>Phone Number</Text>
-                    <View style={[styles.inputWrapper, phoneFocused && styles.inputWrapperFocused]}>
-                      <Ionicons name="call-outline" size={16} color={phoneFocused ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
+                    <View style={[styles.inputWrapper, focusedField === 'signup_phone' && styles.inputWrapperFocused]}>
+                      <Ionicons name="call-outline" size={16} color={focusedField === 'signup_phone' ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={signupPhoneRef}
+                        key="signup-phone-input"
                         style={styles.input}
                         value={phone}
-                        onChangeText={setPhone}
+                        onChangeText={(text) => {
+                          console.log('[CHANGE] PHONE', text);
+                          setPhone(text);
+                        }}
                         keyboardType="phone-pad"
+                        autoComplete="off"
+                        importantForAutofill="no"
                         placeholderTextColor={colors.mutedForeground}
-                        onFocus={() => setPhoneFocused(true)}
-                        onBlur={() => setPhoneFocused(false)}
+                        onFocus={() => {
+                          console.log('[FOCUS] PHONE');
+                          setFocusedField('signup_phone');
+                          setTimeout(() => logNativeFocus('onFocus signup_phone'), 0);
+                        }}
+                        onBlur={() => {
+                          console.log('[BLUR] PHONE');
+                          if (focusedField === 'signup_phone') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur signup_phone'), 0);
+                        }}
                       />
                     </View>
                   </View>
 
                   <View style={styles.fieldGroup}>
                     <Text style={styles.label}>Password</Text>
-                    <View style={[styles.inputWrapper, pwFocused && styles.inputWrapperFocused]}>
-                      <Ionicons name="lock-closed-outline" size={16} color={pwFocused ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
+                    <View style={[styles.inputWrapper, focusedField === 'signup_password' && styles.inputWrapperFocused]}>
+                      <Ionicons name="lock-closed-outline" size={16} color={focusedField === 'signup_password' ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={signupPasswordRef}
+                        key="signup-password-input"
                         style={styles.input}
                         value={password}
-                        onChangeText={setPassword}
+                        onChangeText={(text) => {
+                          console.log('[CHANGE] PASSWORD', text);
+                          setPassword(text);
+                        }}
                         secureTextEntry={!showPw}
+                        autoComplete="off"
+                        importantForAutofill="no"
                         placeholderTextColor={colors.mutedForeground}
-                        onFocus={() => setPwFocused(true)}
-                        onBlur={() => setPwFocused(false)}
+                        onFocus={() => {
+                          console.log('[FOCUS] PASSWORD');
+                          setFocusedField('signup_password');
+                          setTimeout(() => logNativeFocus('onFocus signup_password'), 0);
+                        }}
+                        onBlur={() => {
+                          console.log('[BLUR] PASSWORD');
+                          if (focusedField === 'signup_password') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur signup_password'), 0);
+                        }}
                       />
                       <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowPw((s) => !s)}>
                         <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={17} color={colors.mutedForeground} />
@@ -358,16 +476,25 @@ const LoginPage = () => {
                 <>
                   <View style={styles.fieldGroup}>
                     <Text style={styles.label}>Enter Email or Customer ID</Text>
-                    <View style={[styles.inputWrapper, emailFocused && styles.inputWrapperFocused]}>
-                      <Ionicons name="mail-outline" size={16} color={emailFocused ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
+                    <View style={[styles.inputWrapper, focusedField === 'forgot_email' && styles.inputWrapperFocused]}>
+                      <Ionicons name="mail-outline" size={16} color={focusedField === 'forgot_email' ? colors.success : colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={forgotEmailRef}
                         style={styles.input}
                         value={email}
                         onChangeText={setEmail}
                         autoCapitalize="none"
+                        autoComplete="email"
+                        textContentType="emailAddress"
                         placeholderTextColor={colors.mutedForeground}
-                        onFocus={() => setEmailFocused(true)}
-                        onBlur={() => setEmailFocused(false)}
+                        onFocus={() => {
+                          setFocusedField('forgot_email');
+                          setTimeout(() => logNativeFocus('onFocus forgot_email'), 0);
+                        }}
+                        onBlur={() => { 
+                          if (focusedField === 'forgot_email') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur forgot_email'), 0);
+                        }}
                       />
                     </View>
                   </View>
@@ -389,6 +516,7 @@ const LoginPage = () => {
                     <View style={[styles.inputWrapper]}>
                       <Ionicons name="keypad-outline" size={16} color={colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={resetOtpRef}
                         style={styles.input}
                         value={otp}
                         onChangeText={setOtp}
@@ -396,6 +524,14 @@ const LoginPage = () => {
                         maxLength={6}
                         placeholder="e.g. 123456"
                         placeholderTextColor={colors.mutedForeground}
+                        onFocus={() => {
+                          setFocusedField('reset_otp');
+                          setTimeout(() => logNativeFocus('onFocus reset_otp'), 0);
+                        }}
+                        onBlur={() => { 
+                          if (focusedField === 'reset_otp') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur reset_otp'), 0);
+                        }}
                       />
                     </View>
                   </View>
@@ -405,11 +541,20 @@ const LoginPage = () => {
                     <View style={[styles.inputWrapper]}>
                       <Ionicons name="lock-closed-outline" size={16} color={colors.mutedForeground} style={styles.inputIcon} />
                       <TextInput
+                        ref={resetPasswordRef}
                         style={styles.input}
                         value={newPassword}
                         onChangeText={setNewPassword}
                         secureTextEntry={!showPw}
                         placeholderTextColor={colors.mutedForeground}
+                        onFocus={() => {
+                          setFocusedField('reset_password');
+                          setTimeout(() => logNativeFocus('onFocus reset_password'), 0);
+                        }}
+                        onBlur={() => { 
+                          if (focusedField === 'reset_password') setFocusedField(null);
+                          setTimeout(() => logNativeFocus('onBlur reset_password'), 0);
+                        }}
                       />
                       <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowPw((s) => !s)}>
                         <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={17} color={colors.mutedForeground} />
@@ -431,7 +576,7 @@ const LoginPage = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -519,11 +664,6 @@ const getStyles = (colors) => StyleSheet.create({
   inputWrapperFocused: {
     borderColor: '#36e436ff',
     backgroundColor: '#FFFFFF',
-    shadowColor: '#36e436ff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
   },
   inputIcon: {
     marginRight: 10,

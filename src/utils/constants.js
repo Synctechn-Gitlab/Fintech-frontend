@@ -8,7 +8,7 @@ export const LOAN_CONSTANTS = {
 };
 
 export const SUPPORT_CONSTANTS = {
-  EMAIL: 'support@novafin.example',
+  EMAIL: 'support@hidelfinance.example',
   VERSION: '1.0.0',
   APP_NAME: 'Hidel Finance'
 };

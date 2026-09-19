@@ -79,7 +79,7 @@ const TabBarButton = ({ route, label, isFocused, onPress, onLongPress }) => {
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: isFocused ? 0.3 : 0,
           shadowRadius: 4,
-          elevation: isFocused ? 3 : 0,
+          elevation: 0,
         }}>
           <Ionicons
             name={getIconName()}
@@ -163,7 +163,7 @@ const MainTabs = () => (
 );
 
 const linking = {
-  prefixes: ['http://localhost:8081', 'http://localhost:19006', 'fintech://'],
+  prefixes: ['https://fintech-backend-s12u.onrender.com', 'fintech://'],
   config: {
     screens: {
       VideoIntro: {

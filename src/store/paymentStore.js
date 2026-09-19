@@ -20,7 +20,7 @@ AsyncStorage.getItem('nova_payments').then((json) => {
     state = { payments: JSON.parse(json) };
     notify();
   }
-});
+}).catch(console.error);
 
 const notify = () => {
   listeners.forEach((listener) => listener(state));

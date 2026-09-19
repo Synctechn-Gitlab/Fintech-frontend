@@ -34,7 +34,7 @@ ${divider}
 Disclaimer:
 This is a computer-generated transaction receipt and 
 does not require a physical signature. For support, 
-please contact support@novafin.example.
+please contact support@hidelfinance.example.
 ${border}
 Thank you for banking with Hidel Finance.
 `;

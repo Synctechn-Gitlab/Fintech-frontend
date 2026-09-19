@@ -10,7 +10,7 @@ export const ThemeProvider = ({ children }) => {
   React.useEffect(() => {
     AsyncStorage.getItem('nova_theme').then((saved) => {
       if (saved) setThemeState(saved);
-    });
+    }).catch(console.error);
   }, []);
 
   const setTheme = (t) => {

@@ -177,12 +177,12 @@ const ProfilePage = () => {
                 <Text style={styles.loanLimitMaxLabel}>Max Loan</Text>
                 <Text style={styles.loanLimitMaxValue}>₹50,000</Text>
               </View>
-              <TouchableOpacity style={styles.viewDetailsBtn}>
+              <TouchableOpacity style={styles.viewDetailsBtn} disabled={true}>
                 <Text style={styles.viewDetailsText}>View Details</Text>
               </TouchableOpacity>
             </View>
 
-            <BlurView intensity={25} tint="light" style={styles.comingSoonOverlay}>
+            <BlurView intensity={100} tint="light" style={styles.comingSoonOverlay}>
               <View style={styles.comingSoonBadge}>
                 <Ionicons name="time-outline" size={16} color="#111827" />
                 <Text style={styles.comingSoonText}>Coming Soon</Text>
@@ -203,7 +203,8 @@ const ProfilePage = () => {
             </View>
             <Switch
               value={faceId}
-              onValueChange={setFaceId}
+              onValueChange={() => {}}
+              disabled={true}
               trackColor={{ false: colors.mutedAlt, true: colors.success }}
               thumbColor="#FFFFFF"
             />
@@ -219,7 +220,8 @@ const ProfilePage = () => {
             </View>
             <Switch
               value={twoFactor}
-              onValueChange={setTwoFactor}
+              onValueChange={() => {}}
+              disabled={true}
               trackColor={{ false: colors.mutedAlt, true: colors.success }}
               thumbColor="#FFFFFF"
             />
@@ -235,13 +237,14 @@ const ProfilePage = () => {
             </View>
             <Switch
               value={appLock}
-              onValueChange={setAppLock}
+              onValueChange={() => {}}
+              disabled={true}
               trackColor={{ false: colors.mutedAlt, true: colors.success }}
               thumbColor="#FFFFFF"
             />
           </View>
 
-          <BlurView intensity={25} tint="light" style={styles.comingSoonOverlay}>
+          <BlurView intensity={100} tint="light" style={styles.comingSoonOverlay}>
             <View style={styles.comingSoonBadge}>
               <Ionicons name="time-outline" size={16} color="#111827" />
               <Text style={styles.comingSoonText}>Coming Soon</Text>
@@ -262,13 +265,13 @@ const ProfilePage = () => {
                 <Text style={styles.rowSub}>Ending 1234</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.manageBtn}>
+            <TouchableOpacity style={styles.manageBtn} disabled={true}>
               <Text style={styles.manageBtnText}>Manage</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.divider} />
 
-          <TouchableOpacity style={styles.row} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.row} activeOpacity={1} disabled={true}>
             <View style={styles.rowLeft}>
               <View style={[styles.iconBox, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
                 <Ionicons name="card-outline" size={20} color="#F59E0B" />
@@ -278,7 +281,7 @@ const ProfilePage = () => {
             <Ionicons name="chevron-forward" size={20} color={colors.mutedForeground} />
           </TouchableOpacity>
 
-          <BlurView intensity={25} tint="light" style={styles.comingSoonOverlay}>
+          <BlurView intensity={100} tint="light" style={styles.comingSoonOverlay}>
             <View style={styles.comingSoonBadge}>
               <Ionicons name="time-outline" size={16} color="#111827" />
               <Text style={styles.comingSoonText}>Coming Soon</Text>
@@ -298,7 +301,8 @@ const ProfilePage = () => {
             </View>
             <Switch
               value={pushNotifs}
-              onValueChange={setPushNotifs}
+              onValueChange={() => {}}
+              disabled={true}
               trackColor={{ false: colors.mutedAlt, true: colors.success }}
               thumbColor="#FFFFFF"
             />
@@ -314,7 +318,8 @@ const ProfilePage = () => {
             </View>
             <Switch
               value={emailAlerts}
-              onValueChange={setEmailAlerts}
+              onValueChange={() => {}}
+              disabled={true}
               trackColor={{ false: colors.mutedAlt, true: colors.success }}
               thumbColor="#FFFFFF"
             />
@@ -330,13 +335,14 @@ const ProfilePage = () => {
             </View>
             <Switch
               value={smsMessages}
-              onValueChange={setSmsMessages}
+              onValueChange={() => {}}
+              disabled={true}
               trackColor={{ false: colors.mutedAlt, true: colors.success }}
               thumbColor="#FFFFFF"
             />
           </View>
 
-          <BlurView intensity={25} tint="light" style={styles.comingSoonOverlay}>
+          <BlurView intensity={100} tint="light" style={styles.comingSoonOverlay}>
             <View style={styles.comingSoonBadge}>
               <Ionicons name="time-outline" size={16} color="#111827" />
               <Text style={styles.comingSoonText}>Coming Soon</Text>
@@ -541,7 +547,7 @@ const getStyles = (colors) => StyleSheet.create({
     zIndex: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
   },
   comingSoonBadge: {
     flexDirection: 'row',

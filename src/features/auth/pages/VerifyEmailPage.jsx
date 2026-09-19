@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, TextInput, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../../services/authService';
@@ -14,6 +14,7 @@ const VerifyEmailPage = () => {
   const [resending, setResending] = useState(false);
   const [countdown, setCountdown] = useState(600); // 10 minutes in seconds
   const { showSuccessToast, showErrorToast } = useToast();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
 
   const email = route.params?.email;
 
@@ -68,60 +69,68 @@ const VerifyEmailPage = () => {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.card}>
-          <Ionicons name="mail-unread-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
-          <Text style={styles.title}>Verify your email</Text>
-          <Text style={styles.text}>
-            We sent a 6-digit verification code to <Text style={{ fontWeight: 'bold' }}>{email}</Text>. Please enter it below.
-          </Text>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.card}>
+            <Ionicons name="mail-unread-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+            <Text style={styles.title}>Verify your email</Text>
+            <Text style={styles.text}>
+              We sent a 6-digit verification code to <Text style={{ fontWeight: 'bold' }}>{email}</Text>. Please enter it below.
+            </Text>
 
-          <TextInput
-            style={styles.input}
-            value={otp}
-            onChangeText={setOtp}
-            keyboardType="number-pad"
-            maxLength={6}
-            placeholder="••••••"
-            placeholderTextColor="#9CA3AF"
-            textAlign="center"
-          />
+            <TextInput
+              key="verify-otp-input"
+              style={styles.input}
+              value={otp}
+              onChangeText={(text) => {
+                console.log('[CHANGE] OTP', text);
+                setOtp(text);
+              }}
+              keyboardType="number-pad"
+              maxLength={6}
+              autoComplete="off"
+              importantForAutofill="no"
+              placeholder="••••••"
+              placeholderTextColor="#9CA3AF"
+              textAlign="center"
+            />
 
-          <TouchableOpacity style={styles.button} onPress={handleVerify} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color="#000" />
-            ) : (
-              <Text style={styles.buttonText}>Verify Email</Text>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.resendContainer}>
-            {countdown > 0 ? (
-              <Text style={styles.countdownText}>OTP expires in {formatTime(countdown)}</Text>
-            ) : (
-              <Text style={styles.countdownText}>OTP has expired.</Text>
-            )}
-
-            <TouchableOpacity style={styles.resendButton} onPress={handleResend} disabled={resending}>
-              {resending ? (
-                <ActivityIndicator color={colors.primary} size="small" />
+            <TouchableOpacity style={styles.button} onPress={handleVerify} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#000" />
               ) : (
-                <Text style={styles.resendButtonText}>Resend OTP</Text>
+                <Text style={styles.buttonText}>Verify Email</Text>
               )}
             </TouchableOpacity>
+
+            <View style={styles.resendContainer}>
+              {countdown > 0 ? (
+                <Text style={styles.countdownText}>OTP expires in {formatTime(countdown)}</Text>
+              ) : (
+                <Text style={styles.countdownText}>OTP has expired.</Text>
+              )}
+
+              <TouchableOpacity style={styles.resendButton} onPress={handleResend} disabled={resending}>
+                {resending ? (
+                  <ActivityIndicator color={colors.primary} size="small" />
+                ) : (
+                  <Text style={styles.resendButtonText}>Resend OTP</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+            
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.backButtonText}>Back to Login</Text>
+            </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.backButtonText}>Back to Login</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
